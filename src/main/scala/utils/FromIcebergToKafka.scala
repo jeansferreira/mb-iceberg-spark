@@ -18,31 +18,27 @@ object FromIcebergToKafka {
 
     import spark.implicits._
 
-    val dt_integration = spark.sql("SELECT dtintegration FROM prod.bronze.integration where tablename = 'pageviews'").first()
+    val dt_integration = spark.sql("SELECT dtintegration FROM prod.bronze.integration where tablename = 'person'").first()
     val dtintegration = dt_integration.get(0)
 
     val d = LocalDateTime.now
     val f = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     val ldt = f.format(d)
 
-    val sql = ("SELECT * FROM prod.bronze.pageviews where date >= '"+dtintegration+"' and date <= '"+ldt+"'")
+    val sql = ("SELECT * FROM prod.bronze.person where date >= '"+dtintegration+"' and date <= '"+ldt+"'")
     val df = spark.sql(sql)
 
-    val kafkaBrokers = "kafka-01.event.linximpulse.net:9092," + 
-                       "kafka-02.event.linximpulse.net:9092," + 
-                       "kafka-03.event.linximpulse.net:9092," + 
-                       "kafka-04.event.linximpulse.net:9092," + 
-                       "kafka-05.event.linximpulse.net:9092," + 
-                       "kafka-06.event.linximpulse.net:9092"
+    val kafkaBrokers = "localhost-kafka-1:9092," + 
+                       "localhost-kafka-2:9092"
 
-    val sql_up = ("UPDATE prod.bronze.integration SET dtintegration = '"+ldt+"' where tablename = 'pageviews'")
+    val sql_up = ("UPDATE prod.bronze.integration SET dtintegration = '"+ldt+"' where tablename = 'person'")
     spark.sql(sql_up)
 
     df.select(to_json(struct("*")).alias("value"))
       .write
       .format("kafka")
       .option("kafka.bootstrap.servers", kafkaBrokers)
-      .option("topic", "pageviews")
+      .option("topic", "person")
       .save()
 
     print("Processo finalizado!")

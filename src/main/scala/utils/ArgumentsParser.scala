@@ -12,8 +12,8 @@ case class FromKafkaToIcebergArguments(
 
 case class PrintSchemaArguments(
                                  topic: String = "",
-                                 kafkaBrokers: String = "localhost:6667," +
-                                                        "localhost:9092"
+                                 kafkaBrokers: String = "localhost-kafka-1:6667," +
+                                                        "localhost-kafka-2:6667"
                                )
 
 case class MaintenanceTaskArguments(
